@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 
-const baseUrl = 'http://localhost:5000';
+const baseUrl = 'https://sweet-managemet.onrender.com';
 
 const ITEMS = {
   'Kaju Katri': 730,
