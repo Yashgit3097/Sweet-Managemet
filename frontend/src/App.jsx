@@ -757,7 +757,23 @@ export default function App() {
                   </tr>
                 )}
               </tbody>
+
+              {/* ✅ Grand Total Footer Row */}
+              {users.length > 0 && (
+                <tfoot>
+                  <tr className="font-bold bg-gray-100">
+                    <td className="px-2 py-1 md:px-4 md:py-2 text-right" colSpan={2}>
+                      Grand Total
+                    </td>
+                    <td className="px-2 py-1 md:px-4 md:py-2">
+                      ₹ {users.reduce((acc, u) => acc + (u.totalPrice || 0), 0).toFixed(2)}
+                    </td>
+                    <td colSpan={2}></td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
+
           </div>
         )}
       </div>
