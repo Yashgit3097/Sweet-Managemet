@@ -527,6 +527,34 @@ export default function App() {
     }, 0);
   };
 
+  const getItemQuantityTotalsInKg = () => {
+    const totals = {};
+
+    users.forEach(user => {
+      if (!user.items) return;
+
+      user.items.forEach(it => {
+        const itemName = it.item;
+        const quantityStr = it.quantity || '0g';
+        const grams = parseInt(quantityStr.replace('g', '')) || 0;
+
+        if (!totals[itemName]) {
+          totals[itemName] = 0;
+        }
+
+        totals[itemName] += grams;
+      });
+    });
+
+    // Convert grams to kg and round to 2 decimal places
+    Object.keys(totals).forEach(key => {
+      totals[key] = (totals[key] / 1000).toFixed(2); // e.g., 1.25 kg
+    });
+
+    return totals;
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-50 p-2 md:p-4 lg:p-8">
       <div className="max-w-6xl mx-auto">
@@ -693,6 +721,22 @@ export default function App() {
             </tr>
           </tfoot>
         )}
+
+        {/* 🍬 Grand Quantity per Item in KG */}
+        {users.length > 0 && (
+          <div className="bg-white shadow p-3 mb-4 mt-4 rounded border text-sm md:text-base">
+            <h2 className="font-semibold mb-2 text-indigo-700">📦 Grand Quantity Summary (in kg)</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries(getItemQuantityTotalsInKg()).map(([itemName, totalKg]) => (
+                <div key={itemName} className="bg-gray-100 p-2 rounded flex justify-between items-center">
+                  <span>{itemName}</span>
+                  <span className="font-bold">{totalKg} kg</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* User Table */}
         {!loading && (
           <div className="overflow-x-auto">
