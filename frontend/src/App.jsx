@@ -679,7 +679,20 @@ export default function App() {
             <div className="h-6 w-6 md:h-8 md:w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-
+        {/* ✅ Grand Total Footer Row */}
+        {users.length > 0 && (
+          <tfoot>
+            <tr className="font-bold bg-gray-100">
+              <td className="px-2 py-1 md:px-4 md:py-2 text-right" colSpan={2}>
+                Grand Total
+              </td>
+              <td className="px-2 py-1 md:px-4 md:py-2">
+                ₹ {users.reduce((acc, u) => acc + (u.totalPrice || 0), 0).toFixed(2)}
+              </td>
+              <td colSpan={2}></td>
+            </tr>
+          </tfoot>
+        )}
         {/* User Table */}
         {!loading && (
           <div className="overflow-x-auto">
