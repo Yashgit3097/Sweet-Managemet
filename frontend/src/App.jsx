@@ -323,7 +323,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiMinus } from 'react-icons/fi';
 
-const baseUrl = 'https://sweet-managemet.onrender.com';
+const baseUrl = 'https://sweet-managemet-shea.onrender.com';
 
 const ITEMS = {
   'Kaju Katri': 730,
