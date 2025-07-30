@@ -399,6 +399,7 @@ app.delete('/users/:id', async (req, res) => {
 app.get('/download', async (req, res) => {
   const { name, status, quantity } = req.query;
   let query = {};
+
   if (name) query.name = { $regex: name, $options: 'i' };
   if (status) query.status = status;
   if (quantity) {
@@ -410,30 +411,98 @@ app.get('/download', async (req, res) => {
   }
 
   const users = await User.find(query).sort({ _id: 1 });
-  const rows = [['Sr No', 'Name', 'Item', 'Quantity', 'Price', 'Status']];
-  let sr = 1;
-  let total = 0;
 
-  users.forEach(u => {
-    u.items.forEach(it => {
-      rows.push([sr++, u.name, it.item, it.quantity, it.price, u.status]);
-      total += it.price;
+  const rows = [['Sr No', 'Name', 'Items', 'Total Price (₹)', 'Status']];
+  let sr = 1;
+  let grandTotal = 0;
+  const quantitySummary = {};
+
+  users.forEach(user => {
+    let itemDetails = '';
+    let userTotal = 0;
+
+    user.items.forEach(({ item, quantity }) => {
+      if (!item || !quantity) return;
+      const grams = parseInt(quantity.replace(/[^\d]/g, ''));
+      if (!grams || grams <= 0) return;
+
+      const perKgPrice = ITEMS[item] || 0;
+      const price = (grams / 1000) * perKgPrice;
+      const roundedPrice = price.toFixed(2);
+
+      userTotal += parseFloat(roundedPrice);
+      grandTotal += parseFloat(roundedPrice);
+
+      itemDetails += `${item} (${grams}g) - ₹${roundedPrice}\n`;
+
+      if (!quantitySummary[item]) {
+        quantitySummary[item] = 0;
+      }
+      quantitySummary[item] += grams;
     });
+
+    rows.push([
+      sr++,
+      user.name,
+      itemDetails.trim(),
+      userTotal.toFixed(2),
+      user.status || 'Pending'
+    ]);
   });
 
   rows.push([]);
-  rows.push(['', '', '', 'Total', total, '']);
+  rows.push(['', '', 'Grand Total', grandTotal.toFixed(2), '']);
 
+  rows.push([]);
+  rows.push(['', '', 'Total Quantity per Product', '', '']);
+  Object.entries(quantitySummary).forEach(([item, grams]) => {
+    rows.push(['', '', item, `${grams}g`, '']);
+  });
+
+  // Create workbook and sheet
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Format as table: center cells, and apply borders
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cell_address = { c: C, r: R };
+      const cell_ref = XLSX.utils.encode_cell(cell_address);
+      if (!ws[cell_ref]) continue;
+
+      if (!ws[cell_ref].s) ws[cell_ref].s = {};
+      ws[cell_ref].s.alignment = {
+        horizontal: 'center',
+        vertical: 'center',
+        wrapText: true
+      };
+      ws[cell_ref].s.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    }
+  }
+
+  // Optional: adjust column widths for better visibility
+  ws['!cols'] = [
+    { wch: 8 },   // Sr No
+    { wch: 20 },  // Name
+    { wch: 50 },  // Items
+    { wch: 18 },  // Total Price
+    { wch: 15 }   // Status
+  ];
+
   XLSX.utils.book_append_sheet(wb, ws, 'Orders');
 
   const filePath = path.join(__dirname, 'Orders.xlsx');
-  XLSX.writeFile(wb, filePath);
+  XLSX.writeFile(wb, filePath, { cellStyles: true });
 
   res.download(filePath, 'Orders.xlsx', err => {
     if (err) console.error('Download error:', err);
-    fs.unlinkSync(filePath);
+    fs.unlinkSync(filePath); // delete after download
   });
 });
 
