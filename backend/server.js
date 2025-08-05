@@ -324,7 +324,7 @@ app.post('/users', async (req, res) => {
 
 // ✅ Get users with search, status, quantity logic
 app.get('/users', async (req, res) => {
-  const { name, status, quantity } = req.query;
+  const { name, status, quantity, singleOrder } = req.query;
   let query = {};
 
   if (name) query.name = { $regex: name, $options: 'i' };
@@ -337,9 +337,20 @@ app.get('/users', async (req, res) => {
     }
   }
 
-  const users = await User.find(query).sort({ _id: -1 });
-  res.json(users);
+  // Filter users who have exactly 1 item (single order)
+  if (singleOrder === 'true') {
+    query['items.1'] = { $exists: false }; // means only 0th index exists (1 item)
+  }
+
+  try {
+    const users = await User.find(query).sort({ _id: -1 });
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
+
 
 // ✅ Mark paid
 app.patch('/users/:id/paid', async (req, res) => {

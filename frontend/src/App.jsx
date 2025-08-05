@@ -339,6 +339,7 @@ export default function App() {
   const [filterQuantity, setFilterQuantity] = useState('');
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [filterSingleOrder, setFilterSingleOrder] = useState(false);
 
   // For multiple items
   const [items, setItems] = useState([
@@ -373,6 +374,7 @@ export default function App() {
       if (search) params.push(`name=${search}`);
       if (filterStatus) params.push(`status=${filterStatus}`);
       if (filterQuantity) params.push(`quantity=${filterQuantity}`);
+      if (filterSingleOrder) params.push(`singleOrder=true`);
 
       const res = await fetch(`${baseUrl}/users?${params.join('&')}`);
       const data = await res.json();
@@ -663,6 +665,15 @@ export default function App() {
             onChange={(e) => setSearch(e.target.value)}
             className="border p-2 rounded flex-1 text-sm md:text-base"
           />
+
+          <label className="flex items-center gap-2 text-sm md:text-base">
+            <input
+              type="checkbox"
+              checked={filterSingleOrder}
+              onChange={(e) => setFilterSingleOrder(e.target.checked)}
+            />
+            Single Order Only
+          </label>
 
           <select
             value={filterStatus}
