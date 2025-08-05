@@ -337,6 +337,8 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterQuantity, setFilterQuantity] = useState('');
+  const [filterItem, setFilterItem] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [filterSingleOrder, setFilterSingleOrder] = useState(false);
@@ -375,6 +377,7 @@ export default function App() {
       if (filterStatus) params.push(`status=${filterStatus}`);
       if (filterQuantity) params.push(`quantity=${filterQuantity}`);
       if (filterSingleOrder) params.push(`singleOrder=true`);
+      if (filterItem) params.push(`item=${encodeURIComponent(filterItem)}`);
 
       const res = await fetch(`${baseUrl}/users?${params.join('&')}`);
       const data = await res.json();
@@ -674,6 +677,17 @@ export default function App() {
             />
             Single Order Only
           </label>
+
+          <select
+            value={filterItem}
+            onChange={(e) => setFilterItem(e.target.value)}
+            className="border p-2 rounded text-sm md:text-base"
+          >
+            <option value="">All Items</option>
+            <option value="Kaju Katri">Kaju Katri</option>
+            <option value="Kaju Kasata">Kaju Kasata</option>
+            <option value="Kaju Maisur">Kaju Maisur</option>
+          </select>
 
           <select
             value={filterStatus}

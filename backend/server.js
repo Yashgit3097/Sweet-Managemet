@@ -324,7 +324,7 @@ app.post('/users', async (req, res) => {
 
 // ✅ Get users with search, status, quantity logic
 app.get('/users', async (req, res) => {
-  const { name, status, quantity, singleOrder } = req.query;
+  const { name, status, quantity, singleOrder,item } = req.query;
   let query = {};
 
   if (name) query.name = { $regex: name, $options: 'i' };
@@ -340,6 +340,10 @@ app.get('/users', async (req, res) => {
   // Filter users who have exactly 1 item (single order)
   if (singleOrder === 'true') {
     query['items.1'] = { $exists: false }; // means only 0th index exists (1 item)
+  }
+
+   if (item) {
+    query['items.item'] = item; // Filter users with this item in their items array
   }
 
   try {
